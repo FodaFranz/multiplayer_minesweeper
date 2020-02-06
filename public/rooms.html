@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Multiplayer Minesweeper</title>
+  </head>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="/js/roomSocketEvents.js" type="text/javascript"></script>
+  <script src="/js/rooms.js" type="text/javascript"></script>
+  <body>
+    <input type="button" id="btnCreate" value="create" onclick="create()"/>
+    <input type="text" id="txtUsername" placeholder="User"/>
+    <input type="text" id="txtRoomName" placeholder="Room"/>
+    <input type="text" id="txtMaxPlayers" placeholder="Count"/>
+    <br>
+    <ul id="ulRooms"></ul>
+  </body>
+</html>
