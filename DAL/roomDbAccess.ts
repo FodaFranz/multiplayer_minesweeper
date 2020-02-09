@@ -42,7 +42,7 @@ class RoomDbAccess {
 
     getIdOfName(name: String): Promise<String> {
         return new Promise<String>((resolve, reject) => {
-            Room.find({name: name}, "_id", (err: Error, id: String) => {
+            Room.findOne({name: name}, "_id", (err: Error, id: String) => {
                 if(err)
                     reject(err);
                 else

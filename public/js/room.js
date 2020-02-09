@@ -1,0 +1,3 @@
+$(() => {
+    alert(window.location.href);
+});

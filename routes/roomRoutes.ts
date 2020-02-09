@@ -10,7 +10,7 @@ router.get("/", (req: express.Request, res: express.Response) => {
     const io = res.locals["socketio"];
     roomSocket.connect(io);
 
-    res.sendFile("./rooms.html", { root: "public" });
+    res.sendFile("./lobby.html", { root: "public" });
 });
 
 router.get("/all", (req: express.Request, res: express.Response) => {
@@ -19,6 +19,10 @@ router.get("/all", (req: express.Request, res: express.Response) => {
         .catch(err => {
             console.log(err);
         })
+});
+
+router.get("/:id", (req: express.Request, res: express.Response) => {
+    res.sendFile("./room.html", { root: "public" });
 });
 
 //Used to deliver the id after creating a room
