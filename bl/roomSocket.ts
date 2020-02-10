@@ -1,5 +1,4 @@
 import RoomDb from "../DAL/roomDbAccess";
-import { userInfo } from "os";
 
 class RoomSocket {
     //Object to access the db
@@ -7,7 +6,7 @@ class RoomSocket {
 
     //Runs when user opens xxx/rooms
     connect(io: any) {
-        io.on("connection", (socket:any) => {
+        io.on("connection", (socket: any) => {
             console.log("user connected");
 
             //User creates room and automatically joins it
@@ -17,7 +16,7 @@ class RoomSocket {
                     .then(room => {
                         //Create room inside socket
                         socket.join(room._id);
-                        console.log(creatorName + " created " + room.name);
+                        console.log(`${room.players[0]} created ${room.name} (${room._id})`);
                     })
                     .catch(err => {
                         //TODO: figure out what to do when an error happens
@@ -27,14 +26,22 @@ class RoomSocket {
 
             //Player joins room
             socket.on("join", (id: string, username: string) => {
-
-                console.log("JOIN DER BOI " + id + " " + username);
+                //Join database-room and check if slot is free
+                this.roomDb.join(username, id)
+                    .then(result => {
+                        socket.join(id);
+                        console.log(`${username} joined ${id}`);
+                        //Send message to client to join
+                    })
+                    .catch(err => console.log(err));
             });
 
             //User closes site
             socket.on("disconnect", () => {
+                //Disconnect player
+                //Change admin of room when admin leaves
                 console.log("disconnect");
-            });      
+            });
         });
     }
 }

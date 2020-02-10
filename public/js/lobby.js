@@ -13,7 +13,7 @@ function create() {
     let roomName = $('#txtRoomName').val() || "New Room";
     let maxPlayers = parseInt($('#txtMaxPlayers').val() || 4);
 
-    
+    //Needed to get the id of the name of the created room
     let getRoomIdPromise = new Promise((resolve, reject) => {
         fetch("http://localhost:3000/rooms/getroomidofname/" + roomName)
         .then(id => {
@@ -24,9 +24,9 @@ function create() {
         })
         .catch(err => reject(err));
     });
-    
 
     if (Number.isInteger(maxPlayers)) {
+        //Creates room-socket and room in database
         socket.emit("create", roomName, username, maxPlayers);
         
         //Join room
@@ -43,8 +43,9 @@ function create() {
 
 //Joins the room
 function join(id) {
-    alert(id);
-    location.href = "http://localhost:3000/rooms/" + id;
+    let username = $('#txtUsername').val() || "Guest";
+    socket.emit("join", id, username);
+    //location.href = "http://localhost:3000/rooms/" + id;
 }
 
 function refresh() {

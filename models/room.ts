@@ -6,6 +6,7 @@ export interface IRoom extends mongoose.Document {
     name: String;
     maxPlayers: Number;
     players: [String];
+    state: String;
 }
 
 const roomSchema = new Schema({
@@ -27,7 +28,12 @@ const roomSchema = new Schema({
     },
     players: [{
         type: String,
-    }]
+    }],
+    state: {
+        type: String,
+        enum: [ "playing", "waiting" ],
+        default: "waiting"
+    }
 })
 
 export default mongoose.model<IRoom>("Room", roomSchema);
