@@ -42,7 +42,7 @@ class RoomDbAccess {
         });
     }
 
-    join(playerName: String, roomId: String): Promise<IRoom> {
+    join(playerName: String, roomId: String): Promise<any> {
         //Checks if room has a player-slot left
         const checkSlot = new Promise<Boolean>((resolve, reject) => {
             Room.findById(roomId, "players maxPlayers", (err: Error, result: any) => {
@@ -62,7 +62,7 @@ class RoomDbAccess {
             checkSlot.then(isSlotLeft => {
                 if(isSlotLeft) {
                     //Update player-list inside db
-                    Room.update({ _id: roomId }, 
+                    Room.updateOne({ _id: roomId }, 
                         { $addToSet: { players:  playerName} },
                         (err: Error, result: any) => {
                             if(err) reject(err);
@@ -74,6 +74,18 @@ class RoomDbAccess {
                     reject(new Error("Room is full"));
                 }
             })
+        });
+    }
+
+    removePlayer(roomId: string, playerName: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            Room.updateOne({ _id: roomId }, 
+                { $pullAll: { players:  [playerName]} },
+                (err: Error, result: any) => {
+                    if(err) reject(result);
+
+                    resolve(result);
+                })
         });
     }
 

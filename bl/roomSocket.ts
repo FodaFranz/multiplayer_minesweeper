@@ -19,22 +19,43 @@ class RoomSocket {
                         console.log(`${room.players[0]} created ${room.name} (${room._id})`);
                     })
                     .catch(err => {
-                        //TODO: figure out what to do when an error happens
                         console.log(err);
                     });
             });
 
             //Player joins room
-            socket.on("join", (id: string, username: string) => {
+            socket.on("join", (id: string, playerName: string) => {
                 //Join database-room and check if slot is free
-                this.roomDb.join(username, id)
+                this.roomDb.join(playerName, id)
                     .then(result => {
-                        socket.join(id);
-                        console.log(`${username} joined ${id}`);
-                        //Send message to client to join
+                        if(result.nModified == 1) {
+                            socket.join(id);
+                            console.log(`${playerName} joined ${id}`);
+                            //Send message to client to join
+                            socket.emit("join", id, playerName);
+                        }
+                        else {
+                            //TODO
+                            socket.emit("error", "Could not join room");
+                            console.log("Could not join room");
+                        }
                     })
                     .catch(err => console.log(err));
             });
+
+            socket.on("leave", (id: string, playerName: string) => {
+                //TODO:
+                this.roomDb.removePlayer(id, playerName)
+                    .then(result => {
+                        if(result.nModified == 1) {
+                            socket.leave(id);
+                        }
+                        else {
+                            socket.emit("error", "Could not remove player from room");
+                            console.log("Could not remove player from room");
+                        }
+                    })
+            })
 
             //User closes site
             socket.on("disconnect", () => {

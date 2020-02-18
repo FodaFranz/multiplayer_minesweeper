@@ -1,67 +1,72 @@
-socket = io();
+import Socket from "./socket.js";
 
-//onload equivalent
+//Handles every socket-event
+const socket = new Socket();
+
 $(() => {
     getRooms()
         .then(rooms => displayRooms(rooms))
         .catch(err => console.log(err));
+
+    socket.open();
 });
 
-//Creates room inside mongodb database and automatically joins socket-room
-function create() {
-    let username = $('#txtUsername').val() || "Guest";
+//Creates room insroomIde mongodb database and automatically joins socket-room
+$('#btnCreate').click(() => {
+    console.log("tes");
+    let playerName = $('#txtUsername').val() || "Guest";
     let roomName = $('#txtRoomName').val() || "New Room";
     let maxPlayers = parseInt($('#txtMaxPlayers').val() || 4);
 
-    //Needed to get the id of the name of the created room
+    //Needed to get the roomId of the name of the created room
     let getRoomIdPromise = new Promise((resolve, reject) => {
-        fetch("http://localhost:3000/rooms/getroomidofname/" + roomName)
-        .then(id => {
-            return id.json();
+        fetch("http://localhost:3000/rooms/getroomroomIdofname/" + roomName)
+        .then(roomId => {
+            return roomId.json();
         })
-        .then(idJson => {
-            resolve(idJson._id);
+        .then(roomIdJson => {
+            resolve(roomIdJson._roomId);
         })
         .catch(err => reject(err));
     });
 
     if (Number.isInteger(maxPlayers)) {
         //Creates room-socket and room in database
-        socket.emit("create", roomName, username, maxPlayers);
-        
-        //Join room
+        //socket.emit("create", roomName, playerName, maxPlayers);
+        socket.create(roomName, playerName, maxPlayers);
+
+        //Automatically join room when created
         getRoomIdPromise
-            .then(id => {
-                
+            .then(roomId => {
+                join(roomId);
             })
             .catch(err => console.log(err));
     }
     else {
         alert("Max amount of players must be a number");
     }
-}
+});
 
 //Joins the room
-function join(id) {
-    let username = $('#txtUsername').val() || "Guest";
-    socket.emit("join", id, username);
-    //location.href = "http://localhost:3000/rooms/" + id;
+function join(roomId) {
+    let playerName = $('#txtUsername').val() || "Guest";
+    socket.join(roomId, playerName);
 }
 
 function refresh() {
     //TODO
 }
 
-//Dispalys rooms inside ul-Tag
+//Dispalys rooms id ul-Tag
 function displayRooms(rooms) {
-    let ul = document.getElementById("ulRooms");
+    let ul = document.getElementByroomId("ulRooms");
     rooms.forEach(room => {
         let li = document.createElement("li");
         li.appendChild(document.createTextNode(room.name));
         let joinButton = document.createElement("button");
         joinButton.innerHTML = "Join";
         joinButton.classList.add("btnJoin");
-        joinButton.id = room._id;
+        joinButton.roomId = room._id;
         joinButton.addEventListener("click", () => {
             this.join(room._id);
         });
@@ -70,9 +75,6 @@ function displayRooms(rooms) {
     });
 }
 
-/*
- UTILITY
-*/
 function getRooms() {
     return new Promise((resolve, reject) => {
         //Fetch all currently existing rooms
