@@ -13,6 +13,12 @@ class Socket {
     open() {
         this.io.on("error", (errorMsg) => {
             alert(errorMsg);
+        });
+
+        this.io.on("join", (roomId, playerName) => {
+            console.log("JOIN");
+            location.href = "http://localhost:3000/rooms/"+roomId;
+            localStorage.setItem("playerName", playerName);
         })
     }
 

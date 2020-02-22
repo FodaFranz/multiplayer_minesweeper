@@ -1,5 +1,8 @@
 import RoomDb from "../DAL/roomDbAccess";
 
+//DISCONNECT WHEN PAGE CHANGES
+
+
 class RoomSocket {
     //Object to access the db
     roomDb: RoomDb = new RoomDb();
@@ -17,6 +20,7 @@ class RoomSocket {
                         //Create room inside socket
                         socket.join(room._id);
                         console.log(`${room.players[0]} created ${room.name} (${room._id})`);
+                        socket.emit("join", room._id, creatorName);
                     })
                     .catch(err => {
                         console.log(err);
