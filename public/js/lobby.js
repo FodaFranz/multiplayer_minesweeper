@@ -1,25 +1,35 @@
 import Socket from "./socket.js";
 
-//Handles every socket-event
-const socket = new Socket();
 
 $(() => {
     getRooms()
         .then(rooms => displayRooms(rooms))
         .catch(err => console.log(err));
-
-    socket.open();
 });
 
-//Creates room insroomIde mongodb database and automatically joins socket-room
+//Creates room solely in db
 $('#btnCreate').click(() => {
     let playerName = $('#txtUsername').val() || "Guest";
     let roomName = $('#txtRoomName').val() || "New Room";
     let maxPlayers = parseInt($('#txtMaxPlayers').val() || 4);
 
     if (Number.isInteger(maxPlayers)) {
-        //Creates room-socket and room in database
-        socket.create(roomName, playerName, maxPlayers);
+        fetch("http://localhost:3000/rooms/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ playerName: playerName, roomName: roomName, maxPlayers: maxPlayers })
+            })
+            .then(res => {
+                return res.json();
+            })
+            .then(roomId => {
+                console.log(roomId);
+                localStorage.setItem("playerName", playerName);
+                location.href = "http://localhost:3000/rooms/" + roomId;
+            })
+            .catch(err => alert(err));
     }
     else {
         alert("Max amount of players must be a number");
@@ -30,7 +40,8 @@ $('#btnCreate').click(() => {
 function join(roomId) {
     console.log("join" + roomId);
     let playerName = $('#txtUsername').val() || "Guest";
-    socket.join(roomId, playerName);
+    
+    //Fetch join
 }
 
 function refresh() {
@@ -44,7 +55,7 @@ function displayRooms(rooms) {
         let li = document.createElement("li");
         li.appendChild(document.createTextNode(room.name));
         let joinButton = document.createElement("button");
-        joinButton.innerHTML = "Join";6
+        joinButton.innerHTML = "Join"; 6
         joinButton.classList.add("btnJoin");
         joinButton.roomId = room._id;
         joinButton.addEventListener("click", () => {
@@ -59,12 +70,12 @@ function getRooms() {
     return new Promise((resolve, reject) => {
         //Fetch all currently existing rooms
         fetch("http://localhost:3000/rooms/all")
-        .then(rooms => {
-            return rooms.json();
-        })
-        .then(roomsJson => {
-            resolve(roomsJson);
-        })
-        .catch(err => reject(err));
+            .then(rooms => {
+                return rooms.json();
+            })
+            .then(roomsJson => {
+                resolve(roomsJson);
+            })
+            .catch(err => reject(err));
     });
 }

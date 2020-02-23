@@ -1,8 +1,5 @@
 import RoomDb from "../DAL/roomDbAccess";
 
-//DISCONNECT WHEN PAGE CHANGES
-
-
 class RoomSocket {
     //Object to access the db
     roomDb: RoomDb = new RoomDb();
@@ -11,21 +8,6 @@ class RoomSocket {
     connect(io: any) {
         io.on("connection", (socket: any) => {
             console.log("user connected");
-
-            //User creates room and automatically joins it
-            socket.on("create", (name: string, creatorName: string, maxPlayers: Number) => {
-                //Create room inside mongodb
-                this.roomDb.create(name, creatorName, maxPlayers)
-                    .then(room => {
-                        //Create room inside socket
-                        socket.join(room._id);
-                        console.log(`${room.players[0]} created ${room.name} (${room._id})`);
-                        socket.emit("join", room._id, creatorName);
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
-            });
 
             //Player joins room
             socket.on("join", (id: string, playerName: string) => {

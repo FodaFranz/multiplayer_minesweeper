@@ -8,10 +8,14 @@ import webConfig from "./config/web.json";
 import roomRoutes from "./routes/roomRoutes";
 
 const app = express();
-app.set("port", 3000);
+app.set("port", webConfig.port);
 
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
+
+//To access request-body
+app.use(express.urlencoded());
+app.use(express.json());
 
 app.use(express.static('public'));
 

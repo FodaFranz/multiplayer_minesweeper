@@ -1,4 +1,5 @@
 import express, { Router } from "express";
+
 import RoomSocket from "../bl/roomSocket";
 import RoomDbAccess from "../DAL/roomDbAccess";
 
@@ -21,15 +22,16 @@ router.get("/all", (req: express.Request, res: express.Response) => {
         })
 });
 
+router.post("/create", (req: express.Request, res: express.Response) => {
+    roomDbAccess.create(req.body.roomName, req.body.playerName, req.body.maxPlayers)
+        .then(room => {
+            console.log(room);
+            res.status(200).json(room.id);
+        });
+})
+
 router.get("/:id", (req: express.Request, res: express.Response) => {
     res.sendFile("./room.html", { root: "public" });
-});
-
-//Used to deliver the id after creating a room
-router.get("/getRoomIdOfName/:name", (req: express.Request, res: express.Response) => {
-    roomDbAccess.getIdOfName(req.params.name)
-        .then(id => res.status(200).send(id))
-        .catch(err => console.log(err));
 });
 
 export = router;
