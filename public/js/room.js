@@ -1,3 +1,5 @@
+import Socket from "./socket.js";
+
 let _id = "";
 let _playerName = "";
 

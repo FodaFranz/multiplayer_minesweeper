@@ -57,17 +57,22 @@ class RoomDbAccess {
             });
         });
 
-        return new Promise((resolve, reject) => {
+        return new Promise<any>((resolve, reject) => {
             //Check if room has space
             checkSlot.then(isSlotLeft => {
                 if(isSlotLeft) {
                     //Update player-list inside db
+
+                    //DOESNT UPDATE
                     Room.updateOne({ _id: roomId }, 
                         { $addToSet: { players:  playerName} },
                         (err: Error, result: any) => {
                             if(err) reject(err);
 
-                            resolve(result);
+                            if(result.nModified == 1)
+                                resolve(true);
+                            else   
+                                resolve(false);
                         });
                 }
                 else {

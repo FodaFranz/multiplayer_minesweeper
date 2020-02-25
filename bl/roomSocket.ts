@@ -4,7 +4,7 @@ class RoomSocket {
     //Object to access the db
     roomDb: RoomDb = new RoomDb();
 
-    //Runs when user opens xxx/rooms
+    //Gets called in page-load
     connect(io: any) {
         io.on("connection", (socket: any) => {
             console.log("user connected");
@@ -14,11 +14,11 @@ class RoomSocket {
                 //Join database-room and check if slot is free
                 this.roomDb.join(playerName, id)
                     .then(result => {
-                        if(result.nModified == 1) {
+                        if(result == true) {
                             socket.join(id);
                             console.log(`${playerName} joined ${id}`);
-                            //Send message to client to join
-                            socket.emit("join", id, playerName);
+                            //Broadcast to all room-members
+                            io.to(id).emit("join", playerName, new Date());
                         }
                         else {
                             //TODO

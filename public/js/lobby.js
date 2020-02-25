@@ -1,6 +1,3 @@
-import Socket from "./socket.js";
-
-
 $(() => {
     getRooms()
         .then(rooms => displayRooms(rooms))
@@ -16,18 +13,14 @@ $('#btnCreate').click(() => {
     if (Number.isInteger(maxPlayers)) {
         fetch("http://localhost:3000/rooms/create", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: {  "Content-Type": "application/json" },
                 body: JSON.stringify({ playerName: playerName, roomName: roomName, maxPlayers: maxPlayers })
             })
             .then(res => {
                 return res.json();
             })
             .then(roomId => {
-                console.log(roomId);
-                localStorage.setItem("playerName", playerName);
-                location.href = "http://localhost:3000/rooms/" + roomId;
+                redirectToRoom(playerName, roomId);
             })
             .catch(err => alert(err));
     }
@@ -38,10 +31,26 @@ $('#btnCreate').click(() => {
 
 //Joins the room
 function join(roomId) {
-    console.log("join" + roomId);
     let playerName = $('#txtUsername').val() || "Guest";
     
-    //Fetch join
+    fetch("http://localhost:3000/rooms/join/" + roomId, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerName: playerName })
+    })
+    .then(res => {
+        return res.json();
+    })
+    .then(resJson => {
+        if(resJson == true) {
+            redirectToRoom(playerName, roomId);
+        } 
+        else {
+            //Room should be full
+            alert(resJson);
+        }
+    })
+    .catch(err => alert(err))
 }
 
 function refresh() {
@@ -64,6 +73,11 @@ function displayRooms(rooms) {
         li.appendChild(joinButton);
         ul.appendChild(li);
     });
+}
+
+function redirectToRoom(playerName, roomId) {
+    localStorage.setItem("playerName", playerName);
+    location.href = "http://localhost:3000/rooms/" + roomId;
 }
 
 function getRooms() {

@@ -15,10 +15,9 @@ class Socket {
             alert(errorMsg);
         });
 
-        this.io.on("join", (roomId, playerName) => {
-            location.href = "http://localhost:3000/rooms/"+roomId;
-            localStorage.setItem("playerName", playerName);
-        })
+        this.io.on("join", (playerName, timestamp) => {
+            console.log(timestamp + ": " + playerName + " joined.");
+        });
     }
 
     join(roomId, playerName) {
