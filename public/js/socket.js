@@ -18,11 +18,20 @@ class Socket {
         this.io.on("join", (playerName, timestamp) => {
             console.log(timestamp + ": " + playerName + " joined.");
         });
+
+        this.io.on("leave", (playerName, timestamp) => {
+            console.log(timestamp + ": " + playerName + " left");
+        })
     }
 
     join(roomId, playerName) {
         console.log("join socket");
         this.io.emit("join", roomId, playerName);
+    }
+
+    leave(roomId, playerName) {
+        console.log("leave socket");
+        this.io.emit("leave", roomId, playerName);
     }
 }
 

@@ -31,6 +31,14 @@ router.post("/join/:id", (req: express.Request, res: express.Response) => {
         })
 });
 
+router.post("/leave", (req: express.Request, res: express.Response) => {
+    roomDbAccess.removePlayer(req.body.roomId, req.body.playerName)
+        .then(result => {
+            res.send(result);
+        })
+        .catch(err => res.status(500).send(err.msg));
+})
+
 router.post("/create", (req: express.Request, res: express.Response) => {
     roomDbAccess.create(req.body.roomName, req.body.playerName, req.body.maxPlayers)
         .then(room => {

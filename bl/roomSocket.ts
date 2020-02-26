@@ -10,40 +10,19 @@ class RoomSocket {
             console.log("user connected");
 
             //Player joins room
-            socket.on("join", (id: string, playerName: string) => {
-                //Join database-room and check if slot is free
-                this.roomDb.join(playerName, id)
-                    .then(result => {
-                        if(result == true) {
-                            socket.join(id);
-                            console.log(`${playerName} joined ${id}`);
-                            //Broadcast to all room-members
-                            io.to(id).emit("join", playerName, new Date());
-                        }
-                        else {
-                            //TODO
-                            socket.emit("error", "Could not join room");
-                            console.log("Could not join room");
-                        }
-                    })
-                    .catch(err => console.log(err));
+            socket.on("join", (roomId: string, playerName: string) => {
+                socket.join(roomId);
+                console.log(`${playerName} joined ${roomId}`);
+                //Broadcast to all room-members
+                io.to(roomId).emit("join", playerName, new Date());
             });
 
-            socket.on("leave", (id: string, playerName: string) => {
-                //TODO:
-                this.roomDb.removePlayer(id, playerName)
-                    .then(result => {
-                        if(result.nModified == 1) {
-                            socket.leave(id);
-                        }
-                        else {
-                            socket.emit("error", "Could not remove player from room");
-                            console.log("Could not remove player from room");
-                        }
-                    })
+            socket.on("leave", (roomId: string, playerName: string) => {
+                socket.leave(roomId);
+                io.to(roomId).emit("leave", playerName, new Date());
             })
 
-            //User closes site
+            //User closes site, room already left when disconnect is fired
             socket.on("disconnect", () => {
                 //Disconnect player
                 //Change admin of room when admin leaves

@@ -17,6 +17,23 @@ $(() => {
     socket.join(_id, _playerName);
 });
 
-function leave() {
+$('#btnLeave').click(() => {
     console.log("leave");
-}
+    fetch("http://localhost:3000/rooms/leave", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomId: _id, playerName: _playerName })
+    })
+    .then(res => {
+        return res.json();
+    })
+    .then(resJson => {
+        if(resJson == true) {
+            location.href = "http://localhost:3000/rooms";
+            socket.leave(_roomId, _playerName);
+        }
+        else
+            alert(resJson);
+    })
+    .catch(err => alert(err));
+})
