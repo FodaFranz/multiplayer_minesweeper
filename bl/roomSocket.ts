@@ -7,26 +7,31 @@ class RoomSocket {
     //Gets called in page-load
     connect(io: any) {
         io.on("connection", (socket: any) => {
-            console.log("user connected");
+            console.log(`${socket.client.id} connected`);
 
-            //Player joins room
             socket.on("join", (roomId: string, playerName: string) => {
-                socket.join(roomId);
-                console.log(`${playerName} joined ${roomId}`);
-                //Broadcast to all room-members
-                io.to(roomId).emit("join", playerName, new Date());
+                this.roomDb.join(socket.client.id, playerName, roomId)
+                    .then(result => {
+                        if(result == true) {
+                            socket.join(roomId);
+                            console.log(`${socket.client.id} joined ${roomId}`);
+                        }
+                        else {
+                            socket.emit("error", "Room is full");
+                        }
+                    })
+                    .catch(err => console.log(err));
             });
 
             socket.on("leave", (roomId: string, playerName: string) => {
-                socket.leave(roomId);
-                io.to(roomId).emit("leave", playerName, new Date());
+                
+            });
+
+            socket.on("ready", (roomId: string, playerName: string) => {
             })
 
-            //User closes site, room already left when disconnect is fired
             socket.on("disconnect", () => {
-                //Disconnect player
-                //Change admin of room when admin leaves
-                console.log("disconnect");
+                console.log(`${socket.client.id} disconnected`);
             });
         });
     }

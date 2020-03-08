@@ -1,20 +1,28 @@
 import mongoose, { Schema } from "mongoose";
 
 export interface IRoom extends mongoose.Document {
-    _id: String;
-    _creationTime: Date;
+    creationTime: Date;
     name: String;
     maxPlayers: Number;
-    players: [String];
+    players: [Object];
     state: String;
 }
 
-const roomSchema = new Schema({
-    _id: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
+const playerSchema = new Schema({
+    clientId: {
+        type: String
     },
-    _creationTime: {
+    name: {
+        type: String,
+    },
+    isReady: {
+        type: Boolean,
+        default: false
+    }
+});
+
+const roomSchema = new Schema({
+    creationTime: {
         type: Date,
         required: true
     },
@@ -27,13 +35,13 @@ const roomSchema = new Schema({
         required: true
     },
     players: [{
-        type: String,
+        type: playerSchema,
     }],
     state: {
         type: String,
         enum: [ "playing", "waiting" ],
         default: "waiting"
     }
-})
+});
 
 export default mongoose.model<IRoom>("Room", roomSchema);

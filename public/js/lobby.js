@@ -4,7 +4,10 @@ $(() => {
         .catch(err => console.log(err));
 });
 
-//Creates room solely in db
+/*
+    Creates room inside database without adding the creation-user into the user-array.
+    The user will be added to the user-array in the onload-function of the room-page.
+*/
 $('#btnCreate').click(() => {
     let playerName = $('#txtUsername').val() || "Guest";
     let roomName = $('#txtRoomName').val() || "New Room";
@@ -14,43 +17,28 @@ $('#btnCreate').click(() => {
         fetch("http://localhost:3000/rooms/create", {
                 method: "POST",
                 headers: {  "Content-Type": "application/json" },
-                body: JSON.stringify({ playerName: playerName, roomName: roomName, maxPlayers: maxPlayers })
+                body: JSON.stringify({ roomName: roomName, maxPlayers: maxPlayers })
             })
             .then(res => {
-                return res.json();
+                if(res.status == 200)
+                    return res.json();
+                else 
+                    throw new Error("Error creating lobby");
             })
             .then(roomId => {
                 redirectToRoom(playerName, roomId);
             })
-            .catch(err => alert(err));
+            .catch(err => console.log(err));
     }
     else {
         alert("Max amount of players must be a number");
     }
 });
 
-//Joins the room
 function join(roomId) {
     let playerName = $('#txtUsername').val() || "Guest";
     
-    fetch("http://localhost:3000/rooms/join/" + roomId, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerName: playerName })
-    })
-    .then(res => {
-        return res.json();
-    })
-    .then(resJson => {
-        if(resJson == true) {
-            redirectToRoom(playerName, roomId);
-        } 
-        else {
-            //Room should be full
-            alert(resJson);
-        }
-    })
-    .catch(err => alert(err))
+    redirectToRoom(playerName, roomId);
 }
 
 function refresh() {

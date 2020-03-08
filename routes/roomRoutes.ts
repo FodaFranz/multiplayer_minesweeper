@@ -2,11 +2,10 @@ import express, { Router } from "express";
 
 import RoomSocket from "../bl/roomSocket";
 import RoomDbAccess from "../DAL/roomDbAccess";
-import { isObject } from "util";
 
 const router: Router = express.Router();
 const roomSocket: RoomSocket = new RoomSocket();
-const roomDbAccess: RoomDbAccess = new RoomDbAccess();
+const roomDb: RoomDbAccess = new RoomDbAccess();
 
 router.get("/", (req: express.Request, res: express.Response) => {
     const io = res.locals["socketio"];
@@ -16,34 +15,26 @@ router.get("/", (req: express.Request, res: express.Response) => {
 });
 
 router.get("/all", (req: express.Request, res: express.Response) => {
-    roomDbAccess.get()
+    roomDb.get()
         .then(rooms => res.status(200).json(rooms))
         .catch(err => {
             console.log(err);
         })
 });
 
-router.post("/join/:id", (req: express.Request, res: express.Response) => {
-    roomDbAccess.join(req.body.playerName, req.params.id)
-        .then(result => res.send(result))
-        .catch(err => {
-            res.status(500).send(err);
-        })
+router.post("/leave", (req: express.Request, res: express.Response) => {
+
 });
 
-router.post("/leave", (req: express.Request, res: express.Response) => {
-    roomDbAccess.removePlayer(req.body.roomId, req.body.playerName)
-        .then(result => {
-            res.send(result);
-        })
-        .catch(err => res.status(500).send(err.msg));
-})
-
 router.post("/create", (req: express.Request, res: express.Response) => {
-    roomDbAccess.create(req.body.roomName, req.body.playerName, req.body.maxPlayers)
-        .then(room => {
-            res.status(200).json(room.id);
-        });
+    roomDb.create(req.body.roomName, req.body.maxPlayers)
+        .then(room => res.status(200).send(room._id))
+        .catch(error => res.status(500).send(error.message));
+});
+
+//Ready and unready -> same route
+router.post("/ready", (req: express.Request, res: express.Response) => {
+
 });
 
 router.get("/:id", (req: express.Request, res: express.Response) => {

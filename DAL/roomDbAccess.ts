@@ -3,7 +3,6 @@ import Room, { IRoom } from "../models/room";
 import State from "../util/state";
 
 class RoomDbAccess {
-    //Returns all rooms
     get(): Promise<[IRoom]> {
         return new Promise<[IRoom]>((resolve, reject) => {
             Room.find((err: Error, rooms: [IRoom]) => {
@@ -15,20 +14,17 @@ class RoomDbAccess {
         });
     }
 
-    //Creates room in mongodb and returns the room-object if insertion has been successfull
-    create(name: string, creatorName: string, maxPlayers: Number): Promise<IRoom> {
+    create(name: string, maxPlayers: Number): Promise<IRoom> {
         return new Promise<IRoom>((resolve, reject) => {
             try {
                 const room: IRoom = new Room({
-                    _id: mongoose.Types.ObjectId(),
-                    _creationTime: new Date(),
+                    creationTime: new Date(),
                     name: name,
                     maxPlayers: maxPlayers,
                     players: [],
                     state: State.waiting
                 });
 
-                //Save room to mongodb-Databse
                 room.save((err: Error, room: IRoom) => {
                     if (err)
                         reject(err);
@@ -42,8 +38,8 @@ class RoomDbAccess {
         })
     }
 
-    join(playerName: String, roomId: String): Promise<any> {
-        //Checks if room has a player-slot left
+    //rework join
+    join(clientId: String, playerName: String, roomId: String): Promise<any> {
         const checkSlot = new Promise<Boolean>((resolve, reject) => {
             Room.findById(roomId, "players maxPlayers", (err: Error, result: any) => {
                 if (err) reject(err);
@@ -58,27 +54,43 @@ class RoomDbAccess {
         });
 
         return new Promise<any>((resolve, reject) => {
-            //Check if room has space
             checkSlot.then(isSlotLeft => {
                 if (isSlotLeft) {
-                    //Update player-list inside db
-
-                    //DOESNT UPDATE
                     Room.updateOne({ _id: roomId },
-                        { $push: { players: playerName } },
+                        { $push: { players: { clientId: clientId, name: playerName, isReady: false } } },
                         (err: Error, result: any) => {
                             if (err) reject(err);
 
                             if (result.nModified == 1)
-                                resolve(true);
+                                resolve({ clientId: clientId, playerName: playerName,  });
                             else
-                                resolve(false);
+                                reject(new Error("Error inserting player into db"));
                         });
                 }
                 else {
-                    reject(new Error("Room is full"));
+                    resolve(false);
                 }
             })
+        });
+    }
+
+    //Ready and unready in same function
+    ready(roomId: string, playerName: string): Promise<Boolean> {
+        return new Promise<Boolean>((resolve, reject) => {
+            Room.updateOne({ _id: roomId, "players.name": playerName },
+                {
+                    $set: {
+                        "players.$.ready": true
+                    }
+                },
+                (err: Error, result: any) => {
+                    if(err) reject(err);
+
+                    if(result.nModified == 1)
+                        resolve(true);
+                    else
+                        resolve(false);
+                })
         });
     }
 

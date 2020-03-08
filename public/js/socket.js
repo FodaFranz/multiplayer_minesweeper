@@ -12,7 +12,8 @@ class Socket {
 
     open() {
         this.io.on("error", (errorMsg) => {
-            alert(errorMsg);
+            console.log("Error: " + errorMsg);
+            location.href = "http://localhost:300/rooms";
         });
 
         this.io.on("join", (playerName, timestamp) => {
@@ -21,6 +22,10 @@ class Socket {
 
         this.io.on("leave", (playerName, timestamp) => {
             console.log(timestamp + ": " + playerName + " left");
+        })
+
+        this.io.on("ready", (playerName) => {
+            
         })
     }
 
@@ -32,6 +37,10 @@ class Socket {
     leave(roomId, playerName) {
         console.log("leave socket");
         this.io.emit("leave", roomId, playerName);
+    }
+
+    ready(roomId, playerName) {
+        this.io.emit("ready", roomId, playerName);
     }
 }
 
