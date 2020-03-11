@@ -12,25 +12,7 @@ $(() => {
 });
 
 $('#btnLeave').click(() => {
-    console.log("leave");
-
-    fetch("http://localhost:3000/rooms/leave", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomId: _id, playerName: _playerName })
-    })
-    .then(res => {
-        return res.json();
-    })
-    .then(resJson => {
-        if(resJson == true) {
-            location.href = "http://localhost:3000/rooms";
-            socket.leave(_roomId, _playerName);
-        }
-        else
-            console.log(resJson);
-    })
-    .catch(err => alert(err));
+    socket.emit("leave", _id);
 });
 
 $("#btnReady").click(() => {
@@ -51,15 +33,16 @@ $("#btnReady").click(() => {
 
 socket.on("error", (errorMsg) => {
     alert(errorMsg);
-    location.href = "http://localhost:300/rooms";
+    location.href = "http://localhost:3000/rooms";
 });
 
-socket.on("join", (playerName, timestamp) => {
-    console.log(timestamp + ": " + playerName + " joined.");
+socket.on("join", (timestamp) => {
+    console.log(timestamp + ": " + _playerName + " joined.");
 });
 
-socket.on("leave", (playerName, timestamp) => {
-    console.log(timestamp + ": " + playerName + " left");
+socket.on("leave", (timestamp) => {
+    console.log(timestamp + ": " + _playerName + " left");
+    location.href = "http://localhost:3000/rooms";
 })
 
 socket.on("ready", (playerName) => {

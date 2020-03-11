@@ -1,4 +1,3 @@
-import mongoose, { mongo } from "mongoose";
 import Room, { IRoom } from "../models/room";
 import State from "../util/state";
 
@@ -53,31 +52,31 @@ class RoomDbAccess {
             });
         });
 
-        return new Promise<any>((resolve, reject) => {
-            checkSlot.then(isSlotLeft => {
-                if (isSlotLeft) {
+        return new Promise((resolve, reject) => {
+            checkSlot.then(result => {
+                if (result) {
                     Room.updateOne({ _id: roomId },
                         { $push: { players: { clientId: clientId, name: playerName, isReady: false } } },
                         (err: Error, result: any) => {
-                            if (err) reject(err);
+                            if(err) 
+                                reject(err);
 
-                            if (result.nModified == 1)
-                                resolve({ clientId: clientId, playerName: playerName,  });
-                            else
-                                reject(new Error("Error inserting player into db"));
+                            if(result.nModified == 1) 
+                                resolve(); 
+                            else 
+                                reject(new Error("Error updating db"));
                         });
                 }
                 else {
-                    resolve(false);
+                    reject(new Error("Room full"));
                 }
             })
         });
     }
 
-    //Ready and unready in same function
-    ready(roomId: string, playerName: string): Promise<Boolean> {
+    ready(roomId: string, clientId: string): Promise<Boolean> {
         return new Promise<Boolean>((resolve, reject) => {
-            Room.updateOne({ _id: roomId, "players.name": playerName },
+            Room.updateOne({ _id: roomId, "players.clientId": clientId },
                 {
                     $set: {
                         "players.$.ready": true
@@ -94,17 +93,17 @@ class RoomDbAccess {
         });
     }
 
-    removePlayer(roomId: string, playerName: string): Promise<any> {
+    removePlayer(roomId: string, clientId: string): Promise<any> {
         return new Promise((resolve, reject) => {
             Room.updateOne({ _id: roomId },
-                { $pullAll: { players: [playerName] } },
+                { $pull: { players: { clientId: clientId } } },
                 (err: Error, result: any) => {
-                    if (err) reject(result);
+                    if (err) reject(err);
 
                     if(result.nModified == 1)
-                        resolve(true);
+                        resolve();
                     else
-                        resolve(false);
+                        reject(new Error("Error removing player from db"));
                 })
         });
     }

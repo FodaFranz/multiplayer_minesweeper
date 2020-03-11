@@ -13,7 +13,7 @@ const playerSchema = new Schema({
         type: String
     },
     name: {
-        type: String,
+        type: String
     },
     isReady: {
         type: Boolean,

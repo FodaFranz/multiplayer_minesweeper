@@ -1,30 +1,37 @@
 import RoomDb from "../DAL/roomDbAccess";
 
 class RoomSocket {
-    //Object to access the db
     roomDb: RoomDb = new RoomDb();
 
-    //Gets called in page-load
+    /*
+        Connection gets established when client loads room-page
+    */
     connect(io: any) {
         io.on("connection", (socket: any) => {
             console.log(`${socket.client.id} connected`);
 
             socket.on("join", (roomId: string, playerName: string) => {
                 this.roomDb.join(socket.client.id, playerName, roomId)
-                    .then(result => {
-                        if(result == true) {
-                            socket.join(roomId);
-                            console.log(`${socket.client.id} joined ${roomId}`);
-                        }
-                        else {
-                            socket.emit("error", "Room is full");
-                        }
+                    .then(() => {   
+                        socket.emit("join", new Date());
+                        console.log(`${playerName} (${socket.client.id}) joined ${roomId}`)
                     })
-                    .catch(err => console.log(err));
+                    .catch(err => {
+                        console.log(err);
+                        socket.emit("error", err.message);
+                    });
             });
 
-            socket.on("leave", (roomId: string, playerName: string) => {
-                
+            socket.on("leave", (roomId: string) => {
+                this.roomDb.removePlayer(roomId, socket.client.id)
+                    .then(() => {
+                        socket.emit("leave", new Date());
+                        console.log(`${socket.client.id} left ${roomId}`)
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        socket.emit("error", err.message);
+                    })
             });
 
             socket.on("ready", (roomId: string, playerName: string) => {

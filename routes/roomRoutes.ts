@@ -29,10 +29,12 @@ router.post("/leave", (req: express.Request, res: express.Response) => {
 router.post("/create", (req: express.Request, res: express.Response) => {
     roomDb.create(req.body.roomName, req.body.maxPlayers)
         .then(room => res.status(200).send(room._id))
-        .catch(error => res.status(500).send(error.message));
+        .catch(error => {
+            console.log(error);
+            res.status(500).send(error.message)
+        });
 });
 
-//Ready and unready -> same route
 router.post("/ready", (req: express.Request, res: express.Response) => {
 
 });
