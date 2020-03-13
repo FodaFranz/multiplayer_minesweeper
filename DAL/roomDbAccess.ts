@@ -97,15 +97,33 @@ class RoomDbAccess {
         return new Promise((resolve, reject) => {
             Room.updateOne({ _id: roomId },
                 { $pull: { players: { clientId: clientId } } },
-                (err: Error, result: any) => {
+                async (err: Error, result: any) => {
                     if (err) reject(err);
 
-                    if(result.nModified == 1)
+                    if(result.nModified == 1) {
+                        //Check if room is empty
+                        await this.checkRoom(roomId);
                         resolve();
+                    }
                     else
                         reject(new Error("Error removing player from db"));
                 })
         });
+    }
+
+    //Checks if the room is empty
+    checkRoom(roomId: String): Promise<any> {
+        return new Promise((resolve, reject) => {
+            Room.findOne({ _id: roomId }, "players", async (err: Error, players: any) => {
+                if(err) reject(err);
+    
+                if(players.players.length == 0) {
+                    await Room.deleteOne({ _id: roomId });
+                    resolve();
+                }
+            })
+        })
+        
     }
 
     getIdOfName(name: String): Promise<String> {
