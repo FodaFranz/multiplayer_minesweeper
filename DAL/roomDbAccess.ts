@@ -1,5 +1,6 @@
-import Room, { IRoom } from "../models/room";
+import Room, { IRoom, IPlayer } from "../models/room";
 import State from "../util/state";
+import RoomSocket from "../bl/roomSocket";
 
 class RoomDbAccess {
     get(): Promise<[IRoom]> {
@@ -75,21 +76,17 @@ class RoomDbAccess {
     }
 
     ready(roomId: string, clientId: string): Promise<Boolean> {
-        return new Promise<Boolean>((resolve, reject) => {
-            Room.updateOne({ _id: roomId, "players.clientId": clientId },
-                {
-                    $set: {
-                        "players.$.ready": true
-                    }
-                },
-                (err: Error, result: any) => {
-                    if(err) reject(err);
+        return new Promise((resolve, reject) => {
+            let readyOrUnready: Boolean = true;
+            Room.findById(roomId, (err: Error, room: IRoom) => {
+                if(err) reject(err);
 
-                    if(result.nModified == 1)
-                        resolve(true);
-                    else
-                        resolve(false);
-                })
+                readyOrUnready = room.players.find(x => x.clientId == clientId)!.isReady;
+                room.players.find(x => x.clientId == clientId)!.isReady = !readyOrUnready;
+                room.markModified("players");
+                room.save((err) => reject(err));
+                resolve(!readyOrUnready);
+            });
         });
     }
 
@@ -102,7 +99,13 @@ class RoomDbAccess {
 
                     if(result.nModified == 1) {
                         //Check if room is empty
-                        await this.checkRoom(roomId);
+                        try {
+                            await this.checkRoom(roomId);
+                        }
+                        catch(err) {
+                            reject(err);
+                        }                
+                        
                         resolve();
                     }
                     else

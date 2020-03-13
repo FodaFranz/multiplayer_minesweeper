@@ -1,4 +1,5 @@
 import RoomDb from "../DAL/roomDbAccess";
+import { CLIENT_RENEG_WINDOW } from "tls";
 
 class RoomSocket {
     roomDb: RoomDb = new RoomDb();
@@ -34,8 +35,12 @@ class RoomSocket {
                     })
             });
 
-            socket.on("ready", (roomId: string, playerName: string) => {
-            })
+            socket.on("ready", (roomId: string) => {
+                this.roomDb.ready(roomId, socket.client.id)
+                    .then((isReady) => {
+                        socket.emit("ready", new Date(), isReady);
+                    });
+            });
 
             socket.on("disconnect", () => {
                 console.log(`${socket.client.id} disconnected`);

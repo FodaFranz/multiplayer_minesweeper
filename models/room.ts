@@ -1,10 +1,17 @@
 import mongoose, { Schema } from "mongoose";
 
+
+export interface IPlayer extends mongoose.Document {
+    clientId: String;
+    name: String;
+    isReady: Boolean;
+}
+
 export interface IRoom extends mongoose.Document {
     creationTime: Date;
     name: String;
     maxPlayers: Number;
-    players: [Object];
+    players: [IPlayer];
     state: String;
 }
 

@@ -16,20 +16,9 @@ $('#btnLeave').click(() => {
 });
 
 $("#btnReady").click(() => {
-    fetch("http://localhost:3000/rooms/ready", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomId: _roomId, playerName: _playerName })
-    })
-    .then(res => {
-        return res.json()
-    })
-    .then(resJson => {
-        if(resJson == true) {
-            socket.ready(roomId, playerName);
-        }
-    })
-})
+    socket.emit("ready", _id);
+});
+
 
 socket.on("error", (errorMsg) => {
     alert(errorMsg);
@@ -45,6 +34,7 @@ socket.on("leave", (timestamp) => {
     location.href = "http://localhost:3000/rooms";
 })
 
-socket.on("ready", (playerName) => {
-    
+socket.on("ready", (timestamp, isReady) => {
+    console.log(timestamp + ": " + _playerName + " " + isReady);
+
 })
