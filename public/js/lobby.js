@@ -15,7 +15,7 @@ $('#btnCreate').click(() => {
 
     let height = $("#txtHeight").val() || 16;
     let width = $("#txtWidth").val() || 30;
-    let bombs = $("#txtMines").val() || 99;
+    let mines = $("#txtMines").val() || 99;
 
     if (Number.isInteger(maxPlayers)) {
         fetch("http://localhost:3000/rooms/create", {

@@ -39,6 +39,6 @@ socket.on("ready", (timestamp, isReady, playerName) => {
     console.log(timestamp + ": " + playerName + " " + isReady);
 });
 
-socket.on("startGame", () => {
-
+socket.on("startGame", (timestamp, height, width, mines) => {
+    console.log(height + " " + width + " " + mines);
 });

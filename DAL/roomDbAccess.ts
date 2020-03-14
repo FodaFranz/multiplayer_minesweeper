@@ -83,13 +83,13 @@ class RoomDbAccess {
     ready(roomId: string, clientId: string): Promise<Boolean> {
         return new Promise((resolve, reject) => {
             let readyOrUnready: Boolean = true;
-            Room.findById(roomId, (err: Error, room: IRoom) => {
+            Room.findById(roomId, async (err: Error, room: IRoom) => {
                 if(err) reject(err);
 
                 readyOrUnready = room.players.find(x => x.clientId == clientId)!.isReady;
                 room.players.find(x => x.clientId == clientId)!.isReady = !readyOrUnready;
                 room.markModified("players");
-                room.save((err) => reject(err));
+                await room.save((err) => reject(err));
                 resolve(!readyOrUnready);
             });
         });
@@ -141,10 +141,20 @@ class RoomDbAccess {
         });
     }
 
+    getGameDimensions(roomId: String): Promise<IGameDimensions> {
+        return new Promise<IGameDimensions>((resolve, reject) => {
+            Room.findById(roomId, (err: Error, room: IRoom) => {
+                if(err) reject(err);
+
+                resolve(room.gameDimensions);
+            });
+        })
+    }
+
     //Flips the state
     updateState(roomId: String): Promise<any> {
         return new Promise((resolve, reject) => {
-            Room.findById(roomId, (err: Error, room: IRoom) => {
+            Room.findById(roomId, async (err: Error, room: IRoom) => {
                 if(err) reject(err);
 
                 if(room.state = State.waiting) 
@@ -152,6 +162,8 @@ class RoomDbAccess {
                 else
                     room.state = State.waiting;
 
+                room.markModified("state");
+                await room.save(err => reject(err));
                 resolve();
             })
         });

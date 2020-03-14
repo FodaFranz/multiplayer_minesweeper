@@ -1,5 +1,6 @@
 import RoomDb from "../DAL/roomDbAccess";
 import { CLIENT_RENEG_WINDOW, checkServerIdentity } from "tls";
+import { IGameDimensions } from "../models/room";
 
 class RoomSocket {
     roomDb: RoomDb = new RoomDb();
@@ -44,7 +45,13 @@ class RoomSocket {
                         //Start game if everyone is ready
                         if(await this.roomDb.checkReadyness(roomId)) {
                             console.log("start game");
-                            io.to(roomId).emit("startGame");
+                            try {
+                                const gd: IGameDimensions = await this.roomDb.getGameDimensions(roomId);
+                                io.to(roomId).emit("startGame", new Date(), gd.height, gd.width, gd.mines);
+                            }
+                            catch(err) {
+                                console.log(err);
+                            }
                         }
                     });
             });
