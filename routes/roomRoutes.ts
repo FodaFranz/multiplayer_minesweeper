@@ -27,7 +27,7 @@ router.post("/leave", (req: express.Request, res: express.Response) => {
 });
 
 router.post("/create", (req: express.Request, res: express.Response) => {
-    roomDb.create(req.body.roomName, req.body.maxPlayers)
+    roomDb.create(req.body.roomName, req.body.maxPlayers, req.body.height, req.body.width, req.body.mines)
         .then(room => res.status(200).send(room._id))
         .catch(error => {
             console.log(error);

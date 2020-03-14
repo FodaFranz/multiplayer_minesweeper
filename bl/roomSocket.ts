@@ -1,5 +1,5 @@
 import RoomDb from "../DAL/roomDbAccess";
-import { CLIENT_RENEG_WINDOW } from "tls";
+import { CLIENT_RENEG_WINDOW, checkServerIdentity } from "tls";
 
 class RoomSocket {
     roomDb: RoomDb = new RoomDb();
@@ -14,7 +14,8 @@ class RoomSocket {
             socket.on("join", (roomId: string, playerName: string) => {
                 this.roomDb.join(socket.client.id, playerName, roomId)
                     .then(() => {   
-                        socket.emit("join", new Date());
+                        socket.join(roomId);
+                        io.to(roomId).emit("join", playerName, new Date());
                         console.log(`${playerName} (${socket.client.id}) joined ${roomId}`)
                     })
                     .catch(err => {
@@ -23,11 +24,11 @@ class RoomSocket {
                     });
             });
 
-            socket.on("leave", (roomId: string) => {
+            socket.on("leave", (roomId: string, playerName: String) => {
                 this.roomDb.removePlayer(roomId, socket.client.id)
                     .then(() => {
-                        socket.emit("leave", new Date());
-                        console.log(`${socket.client.id} left ${roomId}`)
+                        io.to(roomId).emit("leave", new Date());
+                        console.log(`${playerName} (${socket.client.id}) left ${roomId}`)
                     })
                     .catch(err => {
                         console.log(err);
@@ -35,10 +36,16 @@ class RoomSocket {
                     })
             });
 
-            socket.on("ready", (roomId: string) => {
+            socket.on("ready", (roomId: string, playerName: string) => {
                 this.roomDb.ready(roomId, socket.client.id)
-                    .then((isReady) => {
-                        socket.emit("ready", new Date(), isReady);
+                    .then(async (isReady) => {
+                        socket.emit("ready", new Date(), isReady, playerName);
+                        
+                        //Start game if everyone is ready
+                        if(await this.roomDb.checkReadyness(roomId)) {
+                            console.log("start game");
+                            io.to(roomId).emit("startGame");
+                        }
                     });
             });
 

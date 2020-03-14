@@ -1,6 +1,8 @@
 let _id = "";
 let _playerName = "";
 
+let currentPlayers = 0;
+ 
 const socket = io();
 
 $(() => {
@@ -12,29 +14,31 @@ $(() => {
 });
 
 $('#btnLeave').click(() => {
-    socket.emit("leave", _id);
+    socket.emit("leave", _id, _playerName);
 });
 
 $("#btnReady").click(() => {
-    socket.emit("ready", _id);
+    socket.emit("ready", _id, _playerName);
 });
-
 
 socket.on("error", (errorMsg) => {
     alert(errorMsg);
     location.href = "http://localhost:3000/rooms";
 });
 
-socket.on("join", (timestamp) => {
-    console.log(timestamp + ": " + _playerName + " joined.");
+socket.on("join", (playerName, timestamp) => {
+    console.log(timestamp + ": " + playerName + " joined.");
 });
 
 socket.on("leave", (timestamp) => {
     console.log(timestamp + ": " + _playerName + " left");
     location.href = "http://localhost:3000/rooms";
-})
+});
 
-socket.on("ready", (timestamp, isReady) => {
-    console.log(timestamp + ": " + _playerName + " " + isReady);
+socket.on("ready", (timestamp, isReady, playerName) => {
+    console.log(timestamp + ": " + playerName + " " + isReady);
+});
 
-})
+socket.on("startGame", () => {
+
+});

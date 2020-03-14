@@ -13,11 +13,21 @@ $('#btnCreate').click(() => {
     let roomName = $('#txtRoomName').val() || "New Room";
     let maxPlayers = parseInt($('#txtMaxPlayers').val() || 4);
 
+    let height = $("#txtHeight").val() || 16;
+    let width = $("#txtWidth").val() || 30;
+    let bombs = $("#txtMines").val() || 99;
+
     if (Number.isInteger(maxPlayers)) {
         fetch("http://localhost:3000/rooms/create", {
                 method: "POST",
-                headers: {  "Content-Type": "application/json" },
-                body: JSON.stringify({ roomName: roomName, maxPlayers: maxPlayers })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    roomName: roomName, 
+                    maxPlayers: maxPlayers,
+                    height: height,
+                    width: width,
+                    mines: mines
+                })
             })
             .then(res => {
                 if(res.status == 200)

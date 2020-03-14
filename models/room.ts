@@ -7,12 +7,19 @@ export interface IPlayer extends mongoose.Document {
     isReady: Boolean;
 }
 
+export interface IGameDimensions extends mongoose.Document {
+    width: Number;
+    height: Number;
+    mines: Number;
+}
+
 export interface IRoom extends mongoose.Document {
     creationTime: Date;
     name: String;
     maxPlayers: Number;
     players: [IPlayer];
     state: String;
+    gameDimensions: IGameDimensions;
 }
 
 const playerSchema = new Schema({
@@ -25,6 +32,18 @@ const playerSchema = new Schema({
     isReady: {
         type: Boolean,
         default: false
+    }
+});
+
+const gameDimensions = new Schema({
+    width: {
+        type: Number
+    },
+    height: {
+        type: Number
+    },
+    mines: {
+        type: Number
     }
 });
 
@@ -42,12 +61,15 @@ const roomSchema = new Schema({
         required: true
     },
     players: [{
-        type: playerSchema,
+        type: playerSchema
     }],
     state: {
         type: String,
         enum: [ "playing", "waiting" ],
         default: "waiting"
+    },
+    gameDimensions: {
+        type: gameDimensions
     }
 });
 

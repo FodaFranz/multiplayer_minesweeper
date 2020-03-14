@@ -1,6 +1,7 @@
-import Room, { IRoom, IPlayer } from "../models/room";
+import Room, { IRoom, IPlayer, IGameDimensions } from "../models/room";
 import State from "../util/state";
 import RoomSocket from "../bl/roomSocket";
+import room from "../models/room";
 
 class RoomDbAccess {
     get(): Promise<[IRoom]> {
@@ -14,7 +15,7 @@ class RoomDbAccess {
         });
     }
 
-    create(name: string, maxPlayers: Number): Promise<IRoom> {
+    create(name: string, maxPlayers: Number, height: Number, width: Number, mines: Number): Promise<IRoom> {
         return new Promise<IRoom>((resolve, reject) => {
             try {
                 const room: IRoom = new Room({
@@ -22,7 +23,12 @@ class RoomDbAccess {
                     name: name,
                     maxPlayers: maxPlayers,
                     players: [],
-                    state: State.waiting
+                    state: State.waiting,
+                    gameDimensions: {
+                        height: height,
+                        width: width,
+                        mines: mines
+                    }
                 });
 
                 room.save((err: Error, room: IRoom) => {
@@ -38,7 +44,6 @@ class RoomDbAccess {
         })
     }
 
-    //rework join
     join(clientId: String, playerName: String, roomId: String): Promise<any> {
         const checkSlot = new Promise<Boolean>((resolve, reject) => {
             Room.findById(roomId, "players maxPlayers", (err: Error, result: any) => {
@@ -114,6 +119,44 @@ class RoomDbAccess {
         });
     }
 
+    checkReadyness(roomId: String): Promise<Boolean> {
+        return new Promise((resolve, reject) => {
+            Room.findById(roomId, async (err: Error, result: any) => {
+                if (err) reject(err);
+
+                const players = result.players as [IPlayer];
+                await players.forEach(player => {
+                    if(player.isReady == false)
+                        resolve(false);
+                })
+
+                if(players.length == result.maxPlayers) {
+                    //Update state
+                    await this.updateState(roomId);
+                    resolve(true);
+                }
+                else 
+                    resolve(false);
+            });
+        });
+    }
+
+    //Flips the state
+    updateState(roomId: String): Promise<any> {
+        return new Promise((resolve, reject) => {
+            Room.findById(roomId, (err: Error, room: IRoom) => {
+                if(err) reject(err);
+
+                if(room.state = State.waiting) 
+                    room.state = State.playing;
+                else
+                    room.state = State.waiting;
+
+                resolve();
+            })
+        });
+    }
+
     //Checks if the room is empty
     checkRoom(roomId: String): Promise<any> {
         return new Promise((resolve, reject) => {
@@ -126,7 +169,6 @@ class RoomDbAccess {
                 }
             })
         })
-        
     }
 
     getIdOfName(name: String): Promise<String> {
