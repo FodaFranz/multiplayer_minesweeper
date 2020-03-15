@@ -8,9 +8,9 @@ export interface IPlayer extends mongoose.Document {
 }
 
 export interface IGameDimensions extends mongoose.Document {
-    width: Number;
-    height: Number;
-    mines: Number;
+    width: number;
+    height: number;
+    mines: number;
 }
 
 export interface IRoom extends mongoose.Document {

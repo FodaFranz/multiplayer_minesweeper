@@ -1,9 +1,10 @@
 import RoomDb from "../DAL/roomDbAccess";
-import { CLIENT_RENEG_WINDOW, checkServerIdentity } from "tls";
-import { IGameDimensions } from "../models/room";
+import Game from "../bl/game";
+import room, { IGameDimensions } from "../models/room";
 
 class RoomSocket {
     roomDb: RoomDb = new RoomDb();
+    game: Game | undefined = undefined;
 
     /*
         Connection gets established when client loads room-page
@@ -47,7 +48,9 @@ class RoomSocket {
                             console.log("start game");
                             try {
                                 const gd: IGameDimensions = await this.roomDb.getGameDimensions(roomId);
-                                io.to(roomId).emit("startGame", new Date(), gd.height, gd.width, gd.mines);
+                                this.game = new Game(gd.height, gd.width, gd.mines, roomId);
+                                this.game.createField();
+                                io.to(roomId).emit("startGame", new Date(), this.game.field);
                             }
                             catch(err) {
                                 console.log(err);
@@ -55,6 +58,11 @@ class RoomSocket {
                         }
                     });
             });
+
+            socket.on("checkField", (roomId: String, playerName: String, x: number, y:number) => {
+                this.game!.check(x,y,playerName);
+                io.to(roomId).emit("newMove", new Date(), this.game!.field, this.game!.openField, playerName);
+            })
 
             socket.on("disconnect", () => {
                 console.log(`${socket.client.id} disconnected`);

@@ -2,7 +2,8 @@ let _id = "";
 let _playerName = "";
 
 let currentPlayers = 0;
- 
+let startTime = 0;
+
 const socket = io();
 
 $(() => {
@@ -39,6 +40,41 @@ socket.on("ready", (timestamp, isReady, playerName) => {
     console.log(timestamp + ": " + playerName + " " + isReady);
 });
 
-socket.on("startGame", (timestamp, height, width, mines) => {
-    console.log(height + " " + width + " " + mines);
+socket.on("newMove", (timestamp, field, openField, playerName) => {
+    console.log("NEW MOVE MY DUDE");
 });
+
+socket.on("win", (timestamp) => {
+    //Vicory
+});
+
+socket.on("loose", (timestamp) => {
+    //Loose
+});
+
+socket.on("startGame", (timestamp, field) => {
+    console.log(field);
+    startTime = timestamp;
+
+    let div = document.getElementById("divGame")
+    for(let i = 0;i < field.length;i++) {
+        for(let j = 0;j < field[i].length; j++) {
+            let button = document.createElement("input");
+            button.type = "button";
+            button.name = j+","+i;
+            button.width=20;
+            button.height=20;
+            button.onclick = () =>  {
+                checkField(j,i);
+            }
+
+            div.appendChild(button);
+        }
+        div.appendChild(document.createElement("br"));
+    }
+});
+
+function checkField(x,y) {
+    socket.emit("checkField", _id, _playerName, x,y);
+}
+
