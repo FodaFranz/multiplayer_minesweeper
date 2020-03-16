@@ -13,8 +13,8 @@ $('#btnCreate').click(() => {
     let roomName = $('#txtRoomName').val() || "New Room";
     let maxPlayers = parseInt($('#txtMaxPlayers').val() || 4);
 
-    let height = $("#txtHeight").val() || 16;
-    let width = $("#txtWidth").val() || 30;
+    let height = $("#txtHeight").val() || 24;
+    let width = $("#txtWidth").val() || 24;
     let mines = $("#txtMines").val() || 99;
 
     if (Number.isInteger(maxPlayers)) {

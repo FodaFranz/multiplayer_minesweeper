@@ -4,7 +4,7 @@ import room, { IGameDimensions } from "../models/room";
 
 class RoomSocket {
     roomDb: RoomDb = new RoomDb();
-    game: Game | undefined = undefined;
+    game: Game = new Game(0,0,0,"");
 
     /*
         Connection gets established when client loads room-page
@@ -60,7 +60,20 @@ class RoomSocket {
             });
 
             socket.on("checkField", (roomId: String, playerName: String, x: number, y:number) => {
-                this.game!.check(x,y,playerName);
+                let retVal: number = this.game!.check(x,y,playerName);
+                if(retVal == 1) {
+                    io.to(roomId).emit("win", new Date());
+                }
+                else if(retVal == -1) {
+                    io.to(roomId).emit("loose", new Date(), playerName);
+                }
+                else if(retVal == 0) {
+                    io.to(roomId).emit("newMove", new Date(), this.game!.field, this.game!.openField, playerName);
+                }
+            });
+
+            socket.on("flag", (roomId: String, playerName: String, x: number, y:number) => {
+                this.game!.flag(x,y);
                 io.to(roomId).emit("newMove", new Date(), this.game!.field, this.game!.openField, playerName);
             })
 
